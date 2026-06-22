@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quiet-Stay</title>
+  
+  <!-- Leaflet Map CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons for visual styling -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  <meta name="google-site-verification" content="8oATgks7lPrSD6fC2lMBhpTGR-nbPg6TUHvAtdvUMyg" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "QuietStay",
+    "url": "https://quietstay.netlify.app/"
+  }
+</script>
+<meta name="application-name" content="QuietStay">
+<meta name="apple-mobile-web-app-title" content="QuietStay">
+
+<link rel="apple-touch-icon" href="logo.png">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #18201a;
+      --muted: #657165;
+      --green: #01639f;
+      --green-dark: #0215a3;
+      --blue: #1cb0f6;
+      --panel: #ffffff;
+      --line: #d8e4d5;
+    }
+    body {
+      font-family: 'Nunito', ui-sans-serif, system-ui, -apple-system, sans-serif;
+      background: white !important;
+      color: var(--ink) !important;
+    }
+    /* Smooth custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f0f7eb;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #c8d8c1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #adc6a2;
+    }
+    /* Pulsing animation for active probe */
+    @keyframes sonar-pulse {
+      0% { transform: scale(0.9); opacity: 1; }
+      100% { transform: scale(2.2); opacity: 0; }
+    }
+    .probe-sonar {
+      position: relative;
+    }
+    .probe-sonar::after {
+      content: '';
+      position: absolute;
+      top: -12px;
+      left: -12px;
+      width: 36px;
+      height: 36px;
+      border: 3px solid #f43f5e;
+      border-radius: 50%;
+      animation: sonar-pulse 1.8s infinite ease-out;
+      pointer-events: none;
+    }
+    body,
+    aside,
+    header,
+    main,
+    section,
+    div {
+      border-color: var(--line) !important;
+    }
+    .bg-slate-950,
+    .bg-slate-800,
+    .bg-slate-900,
+    .bg-slate-900\/30,
+    .bg-slate-900\/40,
+    .bg-slate-900\/50,
+    .bg-slate-950\/40,
+    .bg-slate-950\/60 {
+      background-color: var(--panel) !important;
+    }
+    .bg-slate-800 {
+      background-color: #eef8ea !important;
+    }
+    .text-white,
+    .text-slate-100,
+    .text-slate-200,
+    .text-slate-300 {
+      color: var(--ink) !important;
+    }
+    .text-slate-400,
+    .text-slate-500,
+    .text-slate-600 {
+      color: var(--muted) !important;
+    }
+    .shadow-2xl {
+      box-shadow: 0 10px 26px rgba(31, 84, 28, 0.12) !important;
+    }
+    input,
+    select {
+      background: #fff !important;
+      color: var(--ink) !important;
+      border: 2px solid var(--line) !important;
+      border-radius: 12px !important;
+      font-size: 15px !important;
+      font-weight: 800 !important;
+      min-height: 44px;
+    }
+    input:focus,
+    select:focus {
+      border-color: var(--blue) !important;
+      box-shadow: 0 0 0 4px rgba(28, 176, 246, 0.16) !important;
+    }
+    #searchBtn,
+    .duo-button {
+      background: var(--green) !important;
+      border: 0 !important;
+      border-bottom: 5px solid var(--green-dark) !important;
+      border-radius: 14px !important;
+      color: white !important;
+      font-size: 14px !important;
+      font-weight: 900 !important;
+      justify-content: center;
+      letter-spacing: 0 !important;
+      min-height: 44px;
+      padding: 0 18px !important;
+      text-transform: uppercase;
+      box-shadow: none !important;
+      transition: transform 0.08s ease, border-bottom-width 0.08s ease, background-color 0.15s ease;
+    }
+    #searchBtn:hover,
+    .duo-button:hover {
+      background: #0186d8 !important;
+    }
+    #searchBtn:active,
+    .duo-button:active {
+      transform: translateY(4px);
+      border-bottom-width: 1px !important;
+    }
+    #resetMapBtn {
+      color: var(--blue) !important;
+      background: #eaf7ff !important;
+      border-radius: 999px;
+      height: 34px;
+      width: 34px;
+    }
+    #map {
+      background: white !important;
+    }
+    #probeCoords {
+      display: none;
+    }
+    .leaflet-popup-content-wrapper,
+    .leaflet-popup-tip {
+      background: white !important;
+      color: var(--ink) !important;
+      border-radius: 14px !important;
+    }
+    .leaflet-control-zoom a {
+      color: var(--ink) !important;
+    }
+    .simple-card {
+      background: white;
+      border: 2px solid var(--line);
+      border-radius: 16px;
+    }
+    
+     .aa {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--green) !important;
+  border: 0 !important;
+  border-bottom: 5px solid var(--green-dark) !important;
+  border-radius: 14px !important;
+  color: white !important;
+  font-size: 14px !important;
+  font-weight: 900 !important;
+  min-height: 44px;
+  padding: 0 18px !important;
+  text-transform: uppercase;
+  text-decoration: none; /* removes underline */
+}
+    .aa:hover {
+      background: #0186d8 !important;
+    }
+
+    .aa:active {
+     transform: translateY(4px);
+      border-bottom-width: 1px !important;
+    }
+  </style>
+  <link rel="icon" href="logo.png">
+</head>
+
+<body class="bg-slate-950 text-slate-100 h-screen overflow-hidden flex flex-col md:flex-row">
+
+<header style="
+    position: absolute;
+    z-index: 9999;
+
+    right: 0;
+    
+    background-color: white;
+    border-radius: 0 0 0 15px;
+    padding: 10px;
+    display: flex;
+    gap: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    vertical-align: middle;
+">
+    <a href="index.html" class="aa">Home</a>
+
+    <a href="media.html" class="aa">Media</a>
+    <a href="credits.html" class="aa">Credits</a>
+</header>
+  <!-- Left Panel: Simple search and noise result dashboard -->
+  <aside class="w-full md:w-[380px] lg:w-[420px] bg-slate-900 border-b md:border-b-0 md:border-r border-slate-800 flex flex-col h-[50vh] md:h-full z-20 shadow-2xl flex-shrink-0">
+    <header class="p-4 bg-slate-950 border-b border-slate-800 flex-shrink-0">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <img src="logo.png" style="width: 50px;">
+          <h1 class="text-2xl font-black tracking-tight text-white">Quiet-Stay</h1>
+        </div>
+      </div>
+      <p class="text-sm text-slate-400 mt-1 font-bold">Find calmer hotel areas before you book.</p>
+    </header>
+
+    <!-- Controls Form -->
+    <div class="p-4 border-b border-slate-800 bg-slate-900/50 flex-shrink-0 space-y-3">
+      <div>
+        <label class="block text-xs font-black text-slate-400 uppercase tracking-wider mb-1">Where are you going (city)?</label>
+        <div class="flex flex-col sm:flex-row gap-2">
+          <input id="cityInput" type="text" placeholder="Try Tokyo, Paris, Mumbai..." class="flex-grow px-3 py-1.5 text-xs bg-slate-950 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white" autocomplete="off" />
+          <button id="searchBtn" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5">
+            <i class="fa-solid fa-magnifying-glass"></i> Search
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 gap-2">
+        <div>
+          <label class="block text-xs font-black text-slate-400 uppercase tracking-wider mb-1">Search distance :</label>
+          <select id="radiusSelect" style="width: 100%;" class="w-full px-2 py-1.5 text-xs bg-slate-950 border border-slate-700 rounded-lg focus:outline-none text-white">
+            <option value="3000">Nearby hotels only</option>
+            <option value="5000" selected>Most trips</option>
+            <option value="8000">Wider search</option>
+          </select>
+        </div>
+        <div style="display: none;">
+          <label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-1">Analysis Mode</label>
+          <div class="flex rounded-lg overflow-hidden border border-slate-700 bg-slate-950 text-xs h-[28px]">
+            <button id="dayModeBtn" class="flex-1 bg-slate-800 text-amber-400 font-bold transition-all flex items-center justify-center gap-1" title="Switch to Day Noise Weights">
+              <i class="fa-solid fa-sun"></i> Day
+            </button>
+            <button id="nightModeBtn" class="flex-1 text-slate-400 hover:text-indigo-300 font-bold transition-all flex items-center justify-center gap-1" title="Switch to Night Sleep Weights">
+              <i class="fa-solid fa-moon"></i> Night
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Advanced Mapping Diagnostics Buttons -->
+      <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-800/60" style="display: none;">
+        <button id="heatmapScanBtn" class="w-full bg-slate-950 border border-teal-500/40 hover:border-teal-400 hover:bg-teal-950/10 text-teal-400 text-xs font-semibold py-1.5 px-2 rounded-lg transition-all flex items-center justify-center gap-1.5" title="Generate real-time noise contour layers across the map viewport">
+          <i class="fa-solid fa-circle-nodes"></i> Plot Noise Grid
+        </button>
+        <button id="clearHeatmapBtn" class="w-full bg-slate-950 border border-slate-700 hover:bg-slate-800 text-slate-300 text-xs font-semibold py-1.5 px-2 rounded-lg transition-all flex items-center justify-center gap-1" title="Clear Grid Overlays">
+          <i class="fa-solid fa-eraser"></i> Clear Grid
+        </button>
+      </div>
+    </div>
+
+    <!-- Live Status Stream Banner -->
+    <div class="px-4 py-2 bg-slate-950 border-b border-slate-800 text-xs flex justify-between items-center">
+      <div class="flex items-center gap-2">
+        
+        <span id="statusStream" class="text-slate-300 text-sm font-bold truncate max-w-[280px]">Search a city to begin.</span>
+      </div>
+      <button id="resetMapBtn" class="text-slate-400 hover:text-white font-bold" title="Reset view to start location"><i class="fa-solid fa-arrows-rotate"></i></button>
+    </div>
+
+    <!-- Easy noise result dashboard -->
+    <div class="flex-grow overflow-y-auto p-2 space-y-2 bg-slate-900/30" id="analysisContainer">
+      <div id="welcomeProbeMsg" class="simple-card p-5 text-center space-y-3">
+        <div class="text-[#0068a9] text-4xl"><i class="fa-solid fa-map-location-dot"></i></div>
+        <h3 class="text-lg font-black text-slate-300">How to use it</h3>
+        <p class="text-sm text-slate-400 leading-relaxed font-bold" style="text-align: left;">
+          1. Search a city.<br>
+          2. Green hotel dots are quieter. Red dots are louder.<br>
+          3. Click anywhere on the map to check that exact spot.
+        </p>
+      </div>
+
+      <!-- Hidden by default, populated dynamically on Map click -->
+      <div id="probePanel" class="hidden space-y-3">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+          <div>
+            <h3 class="text-base font-black text-[#1cb0f6]">Noise at this spot</h3>
+            <span id="probeCoords" class="text-[9px] font-mono text-slate-500">LAT: 0.00 | LON: 0.00</span>
+          </div>
+          <span class="text-[#58cc02] text-xs px-2 py-0.5 bg-green-50 border border-green-200 rounded-full font-black">LIVE</span>
+        </div>
+
+        <!-- Big Decibel Readout -->
+        <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 flex items-center justify-between">
+          <div>
+            <span class="text-xs text-slate-500 uppercase font-black tracking-wider block">Noise level</span>
+            <span id="probeDbaValue" class="text-4xl font-extrabold font-mono text-red-400 tracking-tight">40.0 <span class="text-sm font-semibold text-slate-400">dBA</span></span>
+          </div>
+          <div class="text-right">
+            <span id="probeEnvironmentLabel" class="text-xs font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 block mb-1">Pristine Sleep</span>
+            <span id="probePeersContrast" class="text-[10px] text-slate-500 block font-bold">Lower is better for sleep</span>
+          </div>
+        </div>
+
+        <!-- Simple source list -->
+        <div class="space-y-1.5">
+          <h4 class="text-xs font-black text-slate-400 uppercase tracking-wider">What makes it noisy?</h4>
+          <div id="probeSpectrumsList" class="space-y-1 text-xs">
+            <!-- Spectrum meters injected here -->
+          </div>
+        </div>
+
+        <!-- Plain language advice -->
+        <div class="p-3 bg-slate-950/40 rounded-lg border border-slate-800 space-y-1">
+          <span class="text-xs uppercase font-black tracking-wider text-slate-400 block"><i class="fa-solid fa-bed text-[#58cc02] mr-1"></i> Sleep tip</span>
+          <p id="probeAcousticsSummary" class="text-[11px] text-slate-400 leading-relaxed">
+            This looks calm. It should be a comfortable area for most sleepers.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Legend Quick Reference -->
+    <div class="p-3 bg-slate-950 border-t border-slate-800 text-xs flex-shrink-0">
+      <div class="flex justify-between items-center text-[10px] font-semibold text-slate-400 uppercase mb-2">
+        <span>Noise guide</span>
+        <span class="text-[9px] text-[#1cb0f6] font-black">Lower is quieter</span>
+      </div>
+      <div class="grid grid-cols-4 gap-1 text-[10px] font-semibold text-center text-white">
+        <span class="bg-emerald-600/30 border border-emerald-500/50  rounded py-1" title="Quiet">Quiet</span>
+        <span class="bg-amber-600/30 border border-amber-500/50 rounded py-1" title="Okay">Okay</span>
+        <span class="bg-orange-600/30 border border-orange-500/50 rounded py-1" title="Noisy">Noisy</span>
+        <span class="bg-red-600/30 border border-red-500/50  rounded py-1" title="Very noisy">Loud</span>
+      </div>
+    </div>
+   
+  </aside>
+
+  <!-- Main Map and Diagnostics Workspace -->
+  <main class="flex-grow h-[50vh] md:h-full flex flex-col lg:flex-row relative">
+    
+    <!-- Map Canvas Overlay Area -->
+    <section class="flex-grow h-full relative border-b lg:border-b-0 lg:border-r border-slate-800">
+      <div id="map" class="w-full h-full bg-slate-900"></div>
+    </section>
+
+    <!-- Side Analysis & Simulation Diagnostics Panel (Canvas & Catalog) -->
+    <section style="display: none;" class="w-full lg:w-[460px] bg-slate-900 flex flex-col h-2/5 lg:h-full flex-shrink-0 shadow-2xl relative z-10 overflow-hidden">
+      
+      <!-- Live Dynamic Decay Chart Canvas Section -->
+      <header class="p-4 bg-slate-950 border-b border-slate-800 flex-shrink-0 flex items-center justify-between">
+        <div>
+          <h2 class="text-sm font-bold text-white flex items-center gap-1.5">
+            <span class="text-indigo-400"><i class="fa-solid fa-chart-line"></i></span> Noise Decay Formula Canvas
+          </h2>
+          <p class="text-[11px] text-slate-400">Select catalog vector below to plot decay over distance.</p>
+        </div>
+        <span class="text-[9px] font-mono text-pink-500 bg-pink-500/10 px-2 py-0.5 border border-pink-500/20 rounded">Inverse Square Wave</span>
+      </header>
+
+      <!-- Advanced Simulation Graph Panel -->
+      <div class="p-4 bg-slate-950/40 border-b border-slate-800 flex-shrink-0 space-y-3">
+        <!-- Plotting Canvas -->
+        <div class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 flex flex-col items-center shadow-inner relative">
+          <canvas id="decayCanvas" class="w-full h-[140px] bg-slate-950 block rounded-lg"></canvas>
+        </div>
+
+        <!-- Real-time Distance attenuation inspector -->
+        <div class="space-y-1">
+          <div class="flex justify-between text-xs font-semibold text-slate-400">
+            <span>Simulate Distance Exposure:</span>
+            <span id="inspectDistanceVal" class="text-indigo-400 font-mono font-bold">120 meters</span>
+          </div>
+          <input id="distanceInspectorSlider" type="range" min="1" max="1200" value="120" class="w-full accent-indigo-500 cursor-pointer" />
+          <div class="flex justify-between text-[9px] font-mono text-slate-600">
+            <span>1m (At source)</span>
+            <span>600m</span>
+            <span>1200m (Faded background)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interactive Scientific Catalog of Mapped Noise Vectors -->
+      <div class="flex-shrink-0 px-4 py-2 bg-slate-950/60 border-b border-slate-800 flex justify-between items-center text-xs">
+        <span class="font-bold text-slate-400 uppercase tracking-widest text-[10px]"><i class="fa-solid fa-sliders mr-1"></i> Noise Source Catalog</span>
+        <span class="text-[10px] text-indigo-400 font-bold">Adjust & Test Profiles</span>
+      </div>
+
+      <div class="flex-grow overflow-y-auto p-4 space-y-2 bg-slate-900/40" id="sourceCatalogList">
+        <!-- Catalog Items injected here -->
+      </div>
+
+      <!-- System Diagnostic Calculation Footer -->
+      <footer class="p-2.5 bg-slate-950 text-center border-t border-slate-800 text-[10px] text-slate-500 font-mono flex items-center justify-center gap-2">
+        <span>Line: <code class="text-teal-400 font-bold">Lw - 10*log10(d)</code></span>
+        <span class="text-slate-700">|</span>
+        <span>Point: <code class="text-pink-400 font-bold">Lw - 20*log10(d)</code></span>
+      </footer>
+    </section>
+  </main>
+
+  <script>
+    // Core Map Configuration
+    // Initialize Leaflet in Kuala Lumpur or any default start coordinate
+    const map = L.map("map", { zoomControl: true }).setView([1.3521, 103.8198], 13);
+    
+    // Light map tiles keep the whole app easy to read.
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+      attribution: "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors &copy; <a href='https://carto.com/attributions'>CARTO</a>"
+    }).addTo(map);
+
+    // Operational Leaflet Layer Groups
+    const hotelLayer = L.layerGroup().addTo(map);
+    const sourceLayer = L.layerGroup().addTo(map);
+    const gridLayer = L.layerGroup().addTo(map);
+
+    // Dom Binding
+    const statusStream = document.getElementById("statusStream");
+    const cityInput = document.getElementById("cityInput");
+    const searchBtn = document.getElementById("searchBtn");
+    const radiusSelect = document.getElementById("radiusSelect");
+    const dayModeBtn = document.getElementById("dayModeBtn");
+    const nightModeBtn = document.getElementById("nightModeBtn");
+    const heatmapScanBtn = document.getElementById("heatmapScanBtn");
+    const clearHeatmapBtn = document.getElementById("clearHeatmapBtn");
+    const resetMapBtn = document.getElementById("resetMapBtn");
+
+    const analysisContainer = document.getElementById("analysisContainer");
+    const welcomeProbeMsg = document.getElementById("welcomeProbeMsg");
+    const probePanel = document.getElementById("probePanel");
+    const probeCoords = document.getElementById("probeCoords");
+    const probeDbaValue = document.getElementById("probeDbaValue");
+    const probeEnvironmentLabel = document.getElementById("probeEnvironmentLabel");
+    const probeSpectrumsList = document.getElementById("probeSpectrumsList");
+    const probeAcousticsSummary = document.getElementById("probeAcousticsSummary");
+
+    const decayCanvas = document.getElementById("decayCanvas");
+    const canvasCtx = decayCanvas.getContext("2d");
+    const distanceInspectorSlider = document.getElementById("distanceInspectorSlider");
+    const inspectDistanceVal = document.getElementById("inspectDistanceVal");
+    const sourceCatalogList = document.getElementById("sourceCatalogList");
+
+    // Dynamic Variables & Global Diagnostics
+    let activeDayMode = true; // true = Day, false = Night
+    let activeProbeMarker = null; // Leaflet visual probe pin
+    let selectedCatalogKey = "motorway"; // default highlighted source curve catalog key
+    let loadedHotels = [];
+    let loadedSources = [];
+    let animationFrameId = null;
+
+    // Standard Overpass endpoints list
+    const OVERPASS_ENDPOINTS = [
+      "https://overpass-api.de/api/interpreter",
+      "https://overpass.kumi.systems/api/interpreter",
+      "https://overpass.openstreetmap.ru/api/interpreter"
+    ];
+
+    // SCIENTIFIC ACOUSTIC NOISE DICTIONARY
+    // Contains Day/Night Power Levels (Lw), effective environmental propagation range, propagation characteristics (Line vs Point source), and icons.
+    const NOISE_DICTIONARY = {
+      motorway: { label: "Motorway (Fast Lanes)", type: "road", lineSource: true, dayDb: 85, nightDb: 80, range: 600, icon: "🛣️", color: "#ef4444" },
+      primary_road: { label: "Primary Roadway", type: "road", lineSource: true, dayDb: 75, nightDb: 68, range: 450, icon: "🚗", color: "#f97316" },
+      secondary_road: { label: "Secondary Street", type: "road", lineSource: true, dayDb: 65, nightDb: 52, range: 250, icon: "🚙", color: "#fbbf24" },
+      railway_line: { label: "Main Rail Corridor", type: "rail", lineSource: true, dayDb: 88, nightDb: 85, range: 700, icon: "🛤️", color: "#a855f7" },
+      railway_station: { label: "Train Station Hub", type: "rail", lineSource: false, dayDb: 72, nightDb: 65, range: 500, icon: "🚉", color: "#c084fc" },
+      aeroway_runway: { label: "Airport Runway", type: "air", lineSource: true, dayDb: 98, nightDb: 92, range: 1500, icon: "✈️", color: "#14b8a6" },
+      aeroway_helipad: { label: "Helipad", type: "air", lineSource: false, dayDb: 82, nightDb: 75, range: 750, icon: "🚁", color: "#2dd4bf" },
+      nightclub: { label: "Nightclub / Live Bar", type: "nightlife", lineSource: false, dayDb: 55, nightDb: 88, range: 400, icon: "🔊", color: "#ec4899" },
+      pub_bar: { label: "Local Bar / Pub", type: "nightlife", lineSource: false, dayDb: 58, nightDb: 70, range: 250, icon: "🍺", color: "#f472b6" },
+      construction: { label: "Active Construction", type: "construction", lineSource: false, dayDb: 85, nightDb: 35, range: 500, icon: "🏗️", color: "#eab308" },
+      industrial: { label: "Industrial Zone", type: "industrial", lineSource: false, dayDb: 70, nightDb: 55, range: 600, icon: "🏭", color: "#94a3b8" },
+      stadium: { label: "Stadium / Concert Arena", type: "event", lineSource: false, dayDb: 78, nightDb: 82, range: 800, icon: "🏟️", color: "#f97316" }
+    };
+
+    // Responsive Canvas High-DPI Scaling Setup
+    function resizeCanvas() {
+      const rect = decayCanvas.parentNode.getBoundingClientRect();
+      decayCanvas.width = rect.width * window.devicePixelRatio;
+      decayCanvas.height = 140 * window.devicePixelRatio;
+      decayCanvas.style.width = rect.width + 'px';
+      decayCanvas.style.height = '140px';
+      canvasCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    /**
+     * Calculates the decibel level of a specific noise vector at a given distance using acoustic science.
+     * Uses Line Source decay (cylinder wavefront, -3 dBA per doubling) vs Point Source decay (spherical wavefront, -6 dBA per doubling).
+     */
+    function calculateAcousticDecay(source, distanceMeters) {
+      const dbBase = activeDayMode ? source.dayDb : source.nightDb;
+      
+      // Prevent anomalies at zero/very close distances
+      const d = Math.max(1.0, distanceMeters);
+
+      let currentDb = dbBase;
+      if (source.lineSource) {
+        // Line Source propagation model: Lp = Lw - 10 * log10(d) - constant
+        // Note: we scale to range so sound hits comfortable ambient levels near max range
+        currentDb = dbBase - 10 * Math.log10(d);
+      } else {
+        // Point Source propagation model: Lp = Lw - 20 * log10(d) - constant
+        currentDb = dbBase - 20 * Math.log10(d);
+      }
+
+      // Atmospheric damping + ground interference factor (absorbs roughly 1.5 dB per 100m)
+      const airAbsorption = (d / 100.0) * 1.5;
+      currentDb -= airAbsorption;
+
+      // Clamp so sound never drops arbitrarily into negative values
+      return Math.max(0, currentDb);
+    }
+
+    /**
+     * Logarithmic Summation of array of Decibel Levels
+     * Formula: 10 * log10( 10^(db1/10) + 10^(db2/10) + ... )
+     */
+    function combineDecibels(dbList) {
+      if (!dbList || dbList.length === 0) return 40; // background urban noise floor constant
+      
+      let sumOfPowers = 0;
+      for (const db of dbList) {
+        sumOfPowers += Math.pow(10, db / 10.0);
+      }
+      
+      // Inject standard background city noise floor (e.g. 40 dBA)
+      sumOfPowers += Math.pow(10, 40 / 10.0);
+
+      const combined = 10 * Math.log10(sumOfPowers);
+      return Math.round(combined * 10) / 10; // return to 1 decimal place
+    }
+
+    function drawDecayFormulaGraph() {
+      const width = decayCanvas.width / window.devicePixelRatio;
+      const height = 140;
+      canvasCtx.clearRect(0, 0, width, height);
+
+      const activeProfile = NOISE_DICTIONARY[selectedCatalogKey];
+      if (!activeProfile) return;
+
+      const simDist = parseFloat(distanceInspectorSlider.value);
+      inspectDistanceVal.textContent = Math.round(simDist) + " meters";
+
+      // Grid backing lines
+      canvasCtx.strokeStyle = "#1e293b";
+      canvasCtx.lineWidth = 1;
+      for (let x = 40; x < width; x += 50) {
+        canvasCtx.beginPath();
+        canvasCtx.moveTo(x, 10);
+        canvasCtx.lineTo(x, height - 20);
+        canvasCtx.stroke();
+      }
+      for (let y = 15; y < height - 15; y += 25) {
+        canvasCtx.beginPath();
+        canvasCtx.moveTo(40, y);
+        canvasCtx.lineTo(width - 10, y);
+        canvasCtx.stroke();
+      }
+
+      // Plot mathematical curve
+      canvasCtx.strokeStyle = activeProfile.color;
+      canvasCtx.lineWidth = 3;
+      canvasCtx.beginPath();
+
+      const startX = 40;
+      const endX = width - 15;
+      const maxDistanceScale = 1200; // Match max slider bounds
+
+      for (let pixelX = startX; pixelX <= endX; pixelX++) {
+        const curDistance = ((pixelX - startX) / (endX - startX)) * maxDistanceScale;
+        const curDb = calculateAcousticDecay(activeProfile, curDistance);
+        
+        // Map 0 to 110 dBA to canvas height (height-20 scale)
+        const pixelY = (height - 20) - (curDb / 110.0) * (height - 35);
+
+        if (pixelX === startX) {
+          canvasCtx.moveTo(pixelX, pixelY);
+        } else {
+          canvasCtx.lineTo(pixelX, pixelY);
+        }
+      }
+      canvasCtx.stroke();
+
+      // Draw real-time slider interactive pin marker
+      const sliderPercent = simDist / maxDistanceScale;
+      const indicatorX = startX + sliderPercent * (endX - startX);
+      const indicatorDb = calculateAcousticDecay(activeProfile, simDist);
+      const indicatorY = (height - 20) - (indicatorDb / 110.0) * (height - 35);
+
+      canvasCtx.strokeStyle = "rgba(99, 102, 241, 0.4)";
+      canvasCtx.lineWidth = 1.5;
+      canvasCtx.setLineDash([3, 3]);
+      canvasCtx.beginPath();
+      canvasCtx.moveTo(indicatorX, 10);
+      canvasCtx.lineTo(indicatorX, height - 20);
+      canvasCtx.stroke();
+      canvasCtx.setLineDash([]);
+
+      canvasCtx.fillStyle = "#6366f1";
+      canvasCtx.strokeStyle = "#ffffff";
+      canvasCtx.lineWidth = 2;
+      canvasCtx.beginPath();
+      canvasCtx.arc(indicatorX, indicatorY, 6, 0, Math.PI * 2);
+      canvasCtx.fill();
+      canvasCtx.stroke();
+
+      // Render Graph scale texts
+      canvasCtx.fillStyle = "#64748b";
+      canvasCtx.font = "9px monospace";
+      canvasCtx.textAlign = "right";
+      
+      canvasCtx.fillText("100dB", 34, 20);
+      canvasCtx.fillText("50dB", 34, 70);
+      canvasCtx.fillText("0dB", 34, 120);
+
+      canvasCtx.textAlign = "center";
+      canvasCtx.fillText("0m", startX, 134);
+      canvasCtx.fillText("600m", startX + (endX - startX) * 0.5, 134);
+      canvasCtx.fillText("1.2km", endX, 134);
+
+      // Top Diagnostic Readouts
+      canvasCtx.fillStyle = "#ffffff";
+      canvasCtx.font = "bold 11px sans-serif";
+      canvasCtx.textAlign = "left";
+      const formulaStr = activeProfile.lineSource ? "Line Source (Decays slower: -3dB/double)" : "Point Source (Decays faster: -6dB/double)";
+      canvasCtx.fillText(`${activeProfile.icon} ${activeProfile.label} (${activeDayMode ? activeProfile.dayDb : activeProfile.nightDb} dBA base)`, 45, 18);
+      
+      canvasCtx.fillStyle = "#818cf8";
+      canvasCtx.font = "9px monospace";
+      canvasCtx.fillText(`At ${Math.round(simDist)}m: ${Math.round(indicatorDb * 10) / 10} dBA | ${formulaStr}`, 45, 30);
+
+      animationFrameId = requestAnimationFrame(drawDecayFormulaGraph);
+    }
+
+    distanceInspectorSlider.addEventListener("input", drawDecayFormulaGraph);
+    animationFrameId = requestAnimationFrame(drawDecayFormulaGraph);
+
+    function renderSourceCatalog() {
+      sourceCatalogList.innerHTML = "";
+      Object.keys(NOISE_DICTIONARY).forEach(key => {
+        const item = NOISE_DICTIONARY[key];
+        const isActive = key === selectedCatalogKey;
+        const basePower = activeDayMode ? item.dayDb : item.nightDb;
+
+        const card = document.createElement("button");
+        card.className = `w-full text-left p-2.5 rounded-xl border transition-all flex items-center justify-between group ${
+          isActive 
+            ? "bg-slate-800 border-indigo-500 shadow-lg ring-1 ring-indigo-500/30" 
+            : "bg-slate-950/40 border-slate-800 hover:bg-slate-800/40 hover:border-slate-700"
+        }`;
+        card.innerHTML = `
+          <div class="flex items-center gap-3">
+            <span class="text-xl">${item.icon}</span>
+            <div>
+              <div class="text-xs font-bold text-white group-hover:text-indigo-300 transition-colors">${item.label}</div>
+              <div class="text-[10px] text-slate-400 flex items-center gap-2 mt-0.5">
+                <span>Power (Lw): <strong class="text-slate-200">${basePower} dBA</strong></span>
+                <span>•</span>
+                <span>Propagation: <strong class="text-slate-200">${item.lineSource ? "Line" : "Point"}</strong></span>
+              </div>
+            </div>
+          </div>
+          <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${item.color}"></span>
+        `;
+        card.addEventListener("click", () => {
+          selectedCatalogKey = key;
+          renderSourceCatalog();
+        });
+        sourceCatalogList.appendChild(card);
+      });
+    }
+
+    renderSourceCatalog();
+
+    function distanceToSegmentMeters(point, a, b) {
+      const metersPerLat = 111320;
+      const meanLat = ((point.lat + a.lat + b.lat) / 3) * Math.PI / 180;
+      const metersPerLon = Math.max(1000, 111320 * Math.cos(meanLat));
+      const px = point.lon * metersPerLon;
+      const py = point.lat * metersPerLat;
+      const ax = a.lon * metersPerLon;
+      const ay = a.lat * metersPerLat;
+      const bx = b.lon * metersPerLon;
+      const by = b.lat * metersPerLat;
+      const dx = bx - ax;
+      const dy = by - ay;
+      const lenSq = dx * dx + dy * dy;
+      if (!lenSq) return Math.hypot(px - ax, py - ay);
+      const t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / lenSq));
+      return Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
+    }
+
+    function getDistanceToVector(point, source) {
+      if (source.geometry && source.geometry.length > 1) {
+        let bestDistance = Infinity;
+        for (let i = 1; i < source.geometry.length; i++) {
+          const d = distanceToSegmentMeters(point, source.geometry[i - 1], source.geometry[i]);
+          bestDistance = Math.min(bestDistance, d);
+        }
+        return bestDistance;
+      }
+      return haversineDistance(point, source.position);
+    }
+
+    function haversineDistance(a, b) {
+      const earthRadius = 6371000; // meters
+      const toRad = (deg) => deg * Math.PI / 180;
+      const dLat = toRad(b.lat - a.lat);
+      const dLon = toRad(b.lon - a.lon);
+      const lat1 = toRad(a.lat);
+      const lat2 = toRad(b.lat);
+      const x = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      return 2 * earthRadius * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+    }
+
+    // PARSE OSM TAGS TO DICTIONARY SPECIFICATION
+    function identifyNoiseCategory(tags = {}) {
+      const highway = tags.highway;
+      const railway = tags.railway;
+      const aeroway = tags.aeroway;
+      const amenity = tags.amenity;
+      const landuse = tags.landuse;
+      const building = tags.building;
+      const leisure = tags.leisure;
+      const tourism = tags.tourism;
+
+      if (aeroway) {
+        if (aeroway === "runway" || aeroway === "taxiway" || aeroway === "aerodrome") return "aeroway_runway";
+        if (aeroway === "helipad") return "aeroway_helipad";
+      }
+      if (railway) {
+        if (["rail", "subway", "tram", "light_rail"].includes(railway)) return "railway_line";
+        if (railway === "station") return "railway_station";
+      }
+      if (highway) {
+        if (["motorway", "trunk"].includes(highway)) return "motorway";
+        if (["primary", "secondary"].includes(highway)) return "primary_road";
+        if (["tertiary", "unclassified", "residential"].includes(highway)) return "secondary_road";
+      }
+      if (["bar", "pub", "biergarten"].includes(amenity)) return "pub_bar";
+      if (amenity === "nightclub" || amenity === "music_venue") return "nightclub";
+      if (landuse === "construction" || building === "construction" || tags.construction) return "construction";
+      if (landuse === "industrial" || tags.man_made === "works") return "industrial";
+      if (leisure === "stadium" || tourism === "theme_park") return "stadium";
+
+      return null;
+    }
+
+    function elementPosition(el) {
+      if (Number.isFinite(el.lat) && Number.isFinite(el.lon)) return { lat: el.lat, lon: el.lon };
+      if (el.center) return { lat: el.center.lat, lon: el.center.lon };
+      if (el.geometry && el.geometry.length) {
+        const mid = el.geometry[Math.floor(el.geometry.length / 2)];
+        return { lat: mid.lat, lon: mid.lon };
+      }
+      return null;
+    }
+
+    function parseOsmSource(el) {
+      const tags = el.tags || {};
+      const dictKey = identifyNoiseCategory(tags);
+      const pos = elementPosition(el);
+      if (!dictKey || !pos) return null;
+
+      const profile = NOISE_DICTIONARY[dictKey];
+      return {
+        id: `${el.type}/${el.id}`,
+        dictKey,
+        label: tags.name || profile.label,
+        position: pos,
+        geometry: el.geometry || null,
+        ...profile
+      };
+    }
+
+    function parseOsmHotel(el) {
+      const tags = el.tags || {};
+      if (!tags.tourism || !["hotel", "hostel", "guest_house", "motel", "apartment"].includes(tags.tourism)) return null;
+      const pos = elementPosition(el);
+      if (!pos) return null;
+      return {
+        id: `${el.type}/${el.id}`,
+        name: tags.name || tags.brand || "Ambient Stay",
+        kind: tags.tourism,
+        position: pos,
+        tags
+      };
+    }
+
+    /**
+     * Compute cumulative dBA decibel level at any lat-lon coordinate based on actual active sources
+     */
+    function computePointAcoustics(targetLatLon, sourcesList) {
+      const dbExposureList = [];
+      const contributions = [];
+
+      for (const src of sourcesList) {
+        const dist = getDistanceToVector(targetLatLon, src);
+        if (dist > src.range) continue;
+
+        const decayDb = calculateAcousticDecay(src, dist);
+        // Ignore sound vectors fading fully into background
+        if (decayDb < 15) continue;
+
+        dbExposureList.push(decayDb);
+        contributions.push({
+          label: src.label,
+          type: src.type,
+          dictKey: src.dictKey,
+          distance: Math.round(dist),
+          dbLevel: Math.round(decayDb * 10) / 10,
+          icon: src.icon,
+          color: src.color
+        });
+      }
+
+      contributions.sort((a, b) => b.dbLevel - a.dbLevel);
+      const totalDb = combineDecibels(dbExposureList);
+
+      return {
+        totalDb,
+        contributions: contributions.slice(0, 8)
+      };
+    }
+
+    /**
+     * Evaluates a dropped probe coordinate and updates the dashboard with accurate metrics
+     */
+    function analyzeProbePosition(latlng) {
+      if (!loadedSources || loadedSources.length === 0) {
+        statusStream.textContent = "Search a city first, then click the map.";
+        return;
+      }
+
+      const point = { lat: latlng.lat, lon: latlng.lng };
+      const analysis = computePointAcoustics(point, loadedSources);
+
+      welcomeProbeMsg.classList.add("hidden");
+      probePanel.classList.remove("hidden");
+
+      probeCoords.textContent = `LAT: ${latlng.lat.toFixed(5)} | LON: ${latlng.lng.toFixed(5)}`;
+      probeDbaValue.innerHTML = `${analysis.totalDb.toFixed(1)} <span class="text-sm font-semibold text-slate-400">dBA</span>`;
+
+      let envLabel = "Quiet";
+      let envClass = "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+      let summaryText = "This spot looks calm. It should be comfortable for most sleepers.";
+
+      if (analysis.totalDb >= 70.0) {
+        envLabel = "Very Loud";
+        envClass = "bg-red-500/20 text-red-400 border border-red-500/30";
+        probeDbaValue.className = "text-4xl font-extrabold font-mono text-red-400 tracking-tight";
+        summaryText = "This area is likely too loud for light sleepers. Look for rooms away from the street or choose another area.";
+      } else if (analysis.totalDb >= 55.0) {
+        envLabel = "Noisy";
+        envClass = "bg-orange-500/20 text-orange-400 border border-orange-500/30";
+        probeDbaValue.className = "text-4xl font-extrabold font-mono text-orange-400 tracking-tight";
+        summaryText = "Expect traffic, trains, nightlife, or other city sounds. A room on a higher floor may help.";
+      } else if (analysis.totalDb >= 45.0) {
+        envLabel = "Okay";
+        envClass = "bg-amber-500/20 text-amber-400 border border-amber-500/30";
+        probeDbaValue.className = "text-4xl font-extrabold font-mono text-amber-400 tracking-tight";
+        summaryText = "This is normal city background noise. Most people should be fine here.";
+      } else {
+        probeDbaValue.className = "text-4xl font-extrabold font-mono text-emerald-400 tracking-tight";
+      }
+
+      probeEnvironmentLabel.textContent = envLabel;
+      probeEnvironmentLabel.className = `text-[10px] font-bold px-2 py-0.5 rounded ${envClass} block mb-1`;
+      probeAcousticsSummary.textContent = summaryText;
+
+      // Render breakdown meters
+      probeSpectrumsList.innerHTML = "";
+      if (analysis.contributions.length === 0) {
+        probeSpectrumsList.innerHTML = `
+          <div class="text-[11px] text-slate-500 italic py-2">
+            No big noise sources nearby.
+          </div>
+        `;
+      } else {
+        analysis.contributions.forEach(item => {
+          const row = document.createElement("div");
+          row.className = "space-y-0.5 py-1 border-b border-slate-800/40 last:border-0";
+          
+          // Calculate percentage width of dBA scale (max scale 100)
+          const fillWidth = Math.min(100, Math.round((item.dbLevel / 100.0) * 100));
+          
+          row.innerHTML = `
+            <div class="flex justify-between items-center text-[11px]">
+              <span class="text-white font-bold truncate max-w-[190px]">${item.icon} ${item.label}</span>
+              <span class="text-slate-400 text-[10px] font-bold">${item.distance}m away</span>
+            </div>
+            <div class="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden">
+              <div class="h-full rounded-full transition-all" style="width: ${fillWidth}%; background-color: ${item.color}"></div>
+            </div>
+          `;
+          probeSpectrumsList.appendChild(row);
+        });
+      }
+    }
+
+    // Set up Leaflet Click Handler for Probing
+    map.on("click", (e) => {
+      if (activeProbeMarker) {
+        map.removeLayer(activeProbeMarker);
+      }
+
+      // Drop active probe icon with heartbeat sonar effect
+      const customIcon = L.divIcon({
+        className: 'probe-sonar',
+        html: '<div style="background-color:#f43f5e; width:12px; height:12px; border-radius:50%; border:2px solid white; box-shadow:0 0 8px rgba(0,0,0,0.5);"></div>',
+        iconSize: [12, 12],
+        iconAnchor: [6, 6]
+      });
+
+      activeProbeMarker = L.marker(e.latlng, { icon: customIcon }).addTo(map);
+      analyzeProbePosition(e.latlng);
+    });
+
+    /**
+     * Iteratively scans the entire current map view boundaries, calculates physical noise exposure grid points,
+     * and displays semi-transparent spatial heat zones directly across streets/blocks.
+     */
+    function calculateViewportNoiseHeatmap() {
+      if (!loadedSources || loadedSources.length === 0) {
+        statusStream.textContent = "Please search a city first to load regional geometry database!";
+        return;
+      }
+
+      gridLayer.clearLayers();
+      statusStream.textContent = "Evaluating spatial viewport decibel grid contours...";
+      
+      const bounds = map.getBounds();
+      const southWest = bounds.getSouthWest();
+      const northEast = bounds.getNorthEast();
+
+      // Divide viewport into high performance sampling matrix (22x22 points)
+      const xSteps = 22;
+      const ySteps = 22;
+
+      const latDiff = northEast.lat - southWest.lat;
+      const lonDiff = northEast.lng - southWest.lng;
+
+      const stepLat = latDiff / ySteps;
+      const stepLon = lonDiff / xSteps;
+
+      for (let i = 0; i < xSteps; i++) {
+        for (let j = 0; j < ySteps; j++) {
+          const sampleLat = southWest.lat + (j * stepLat) + (stepLat / 2);
+          const sampleLon = southWest.lng + (i * stepLon) + (stepLon / 2);
+          const coord = { lat: sampleLat, lon: sampleLon };
+
+          // Logarithmic Sum of noise elements at coordinates
+          const analysis = computePointAcoustics(coord, loadedSources);
+          const dbVal = analysis.totalDb;
+
+          // Only draw contour cell if above standard baseline ambient floor (42 dBA)
+          if (dbVal > 42.0) {
+            // Pick color hue matching intensity scale
+            let hexColor = "#10b981"; // green (quiet)
+            let cellOpacity = 0.15;
+
+            if (dbVal >= 70.0) {
+              hexColor = "#ef4444"; // red
+              cellOpacity = 0.50;
+            } else if (dbVal >= 58.0) {
+              hexColor = "#f97316"; // orange
+              cellOpacity = 0.40;
+            } else if (dbVal >= 48.0) {
+              hexColor = "#eab308"; // yellow
+              cellOpacity = 0.25;
+            }
+
+            // Create grid box bounding coordinates
+            const cellBounds = [
+              [sampleLat - (stepLat / 2), sampleLon - (stepLon / 2)],
+              [sampleLat + (stepLat / 2), sampleLon + (stepLon / 2)]
+            ];
+
+            // Render on map with exact color contour
+            L.rectangle(cellBounds, {
+              color: "transparent",
+              fillColor: hexColor,
+              fillOpacity: cellOpacity,
+              weight: 0,
+              interactive: true
+            }).bindTooltip(`Est: ${dbVal.toFixed(1)} dBA`, { sticky: true, opacity: 0.9 })
+              .addTo(gridLayer);
+          }
+        }
+      }
+
+      statusStream.textContent = "Spatial noise grid calculated. Hover grid boxes to inspect local dBA.";
+    }
+
+    heatmapScanBtn.addEventListener("click", calculateViewportNoiseHeatmap);
+    clearHeatmapBtn.addEventListener("click", () => {
+      gridLayer.clearLayers();
+      statusStream.textContent = "Spatial contour grid layers cleared.";
+    });
+
+    function renderMapHotelMarkers(hotelsList, sourcesList) {
+      hotelLayer.clearLayers();
+      const scoredHotels = hotelsList.map(hotel => {
+        const pointAnalysis = computePointAcoustics(hotel.position, sourcesList);
+        return {
+          ...hotel,
+          score: pointAnalysis.totalDb, // cumulative noise dBA
+          contributions: pointAnalysis.contributions
+        };
+      }).sort((a, b) => a.score - b.score);
+
+      if (scoredHotels.length === 0) return;
+
+      // Extract local max/min dBA to map highest visual spectrum differentiation
+      const minDb = scoredHotels[0].score;
+      const maxDb = scoredHotels[scoredHotels.length - 1].score;
+      const dbDiff = maxDb - minDb;
+
+      for (const hotel of scoredHotels) {
+        // Calculate contrast percent
+        let scaleVal = hotel.score;
+        if (dbDiff > 0) {
+          scaleVal = ((hotel.score - minDb) / dbDiff) * 100;
+        } else {
+          scaleVal = 0;
+        }
+
+        // Color coding markers by relative loudness
+        let color = "#10b981"; // green
+        let riskLabel = "Quiet choice";
+        let levelDesc = "Best for sleep in this search.";
+
+        if (scaleVal >= 75) {
+          color = "#ef4444"; // red
+          riskLabel = "Loud area";
+          levelDesc = "May be hard for light sleepers.";
+        } else if (scaleVal >= 50) {
+          color = "#f97316"; // orange
+          riskLabel = "Noisy area";
+          levelDesc = "Expect city noise nearby.";
+        } else if (scaleVal >= 25) {
+          color = "#fbbf24"; // yellow
+          riskLabel = "Okay area";
+          levelDesc = "Some background noise.";
+        }
+
+        const contributorsList = hotel.contributions.length
+          ? `<ul class="mt-1.5 pl-4 list-disc text-[11px] text-slate-300">${hotel.contributions.slice(0, 3).map(c =>
+              `<li>${c.icon} <strong>${c.label}</strong> ${c.distance}m away</li>`
+            ).join("")}</ul>`
+          : "<div class='text-[10px] text-emerald-400 mt-1 font-bold'>No big noise sources nearby.</div>";
+
+        const popupContent = `
+          <div class="text-slate-100 bg-slate-950 p-2.5 rounded-lg border border-slate-800 space-y-1.5" style="width:250px;">
+            <div class="font-bold text-white text-sm border-b border-slate-800 pb-1 flex justify-between items-center">
+              <span>${escapeHtml(hotel.name)}</span>
+              <span class="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-indigo-400">${escapeHtml(hotel.kind)}</span>
+            </div>
+            <div class="text-xs text-slate-300">
+              Noise: <strong class="text-rose-400 font-mono">${hotel.score.toFixed(1)} dBA</strong><br>
+              Verdict: <strong class="text-indigo-400 text-[11px]">${riskLabel}</strong><br>
+              <em class="text-[10px] text-slate-400 block mt-0.5">${levelDesc}</em>
+            </div>
+            <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider pt-1.5 border-t border-slate-800/80">Nearby noise</div>
+            ${contributorsList}
+          </div>
+        `;
+
+        // Render high aesthetic custom circular Leaflet marker
+        L.circleMarker([hotel.position.lat, hotel.position.lon], {
+          radius: 8 + Math.round(scaleVal / 15),
+          color,
+          fillColor: color,
+          fillOpacity: 0.82,
+          weight: 2
+        }).addTo(hotelLayer).bindPopup(popupContent, { className: "transparent-popup-bg" });
+      }
+
+      return scoredHotels;
+    }
+
+    // DRAW VISUAL NOISE SOURCES POLYGON/LINES
+    function renderMapNoiseVectors(sourcesList) {
+      sourceLayer.clearLayers();
+      for (const src of sourcesList) {
+        const popupText = `<div class="text-xs font-bold">${src.icon} ${escapeHtml(src.label)}</div><div class="text-[10px] text-slate-400">${src.lineSource ? "Line" : "Point"} Source</div>`;
+        if (src.geometry && src.geometry.length > 1) {
+          L.polyline(src.geometry.map(p => [p.lat, p.lon]), {
+            color: src.color,
+            weight: 3.5,
+            opacity: 0.52,
+            interactive: true
+          }).addTo(sourceLayer).bindPopup(popupText);
+        } else {
+          L.circleMarker([src.position.lat, src.position.lon], {
+            radius: 5,
+            color: src.color,
+            fillColor: src.color,
+            fillOpacity: 0.8,
+            weight: 1
+          }).addTo(sourceLayer).bindPopup(popupText);
+        }
+      }
+    }
+
+    async function locateCityCoordinates(cityStr) {
+      const params = new URLSearchParams({
+        format: "jsonv2",
+        q: cityStr,
+        limit: "1",
+        addressdetails: "1"
+      });
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?${params}`, {
+        headers: { "Accept-html": "application/json" }
+      });
+      if (!res.ok) throw new Error("Geocoder database lookup failed.");
+      const data = await res.json();
+      if (!data.length) return null;
+      return {
+        lat: parseFloat(data[0].lat),
+        lon: parseFloat(data[0].lon),
+        displayName: data[0].display_name
+      };
+    }
+
+    function buildScientificOverpassQuery(lat, lon, radius) {
+      return `
+        [out:json][timeout:45];
+        (
+          node["tourism"~"^(hotel|hostel|guest_house|motel|apartment)$"](around:${radius},${lat},${lon});
+          way["tourism"~"^(hotel|hostel|guest_house|motel|apartment)$"](around:${radius},${lat},${lon});
+          relation["tourism"~"^(hotel|hostel|guest_house|motel|apartment)$"](around:${radius},${lat},${lon});
+
+          way["highway"~"^(motorway|trunk|primary|secondary|tertiary)$"](around:${radius + 300},${lat},${lon});
+          
+          node["railway"~"^(station)$"](around:${radius},${lat},${lon});
+          way["railway"~"^(rail|subway|tram|light_rail)$"](around:${radius},${lat},${lon});
+
+          node["aeroway"~"^(aerodrome|runway|taxiway|helipad)$"](around:${radius + 2500},${lat},${lon});
+          way["aeroway"~"^(aerodrome|runway|taxiway|helipad)$"](around:${radius + 2500},${lat},${lon});
+
+          node["amenity"~"^(bar|pub|biergarten|nightclub|music_venue)$"](around:${radius},${lat},${lon});
+          way["amenity"~"^(bar|pub|biergarten|nightclub|music_venue)$"](around:${radius},${lat},${lon});
+
+          node["landuse"~"^(construction|industrial)$"](around:${radius},${lat},${lon});
+          way["landuse"~"^(construction|industrial)$"](around:${radius},${lat},${lon});
+
+          node["leisure"~"^(stadium)$"](around:${radius},${lat},${lon});
+          way["leisure"~"^(stadium)$"](around:${radius},${lat},${lon});
+        );
+        out center tags ;
+      `;
+    }
+
+    async function executeOverpassQuery(lat, lon, radius) {
+      const query = buildScientificOverpassQuery(lat, lon, radius);
+      let errorTracker;
+
+      for (const endpoint of OVERPASS_ENDPOINTS) {
+        try {
+          const response = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=UTF-8" },
+            body: query
+          });
+          if (!response.ok) throw new Error(`Overpass node status: ${response.status}`);
+          return await response.json();
+        } catch (err) {
+          errorTracker = err;
+        }
+      }
+      throw errorTracker || new Error("All active OpenStreetMap servers timed out.");
+    }
+
+    async function processAnalysisPipeline() {
+      const city = cityInput.value.trim();
+      if (!city) return;
+
+      setUiLoadingState(true);
+      gridLayer.clearLayers();
+      hotelLayer.clearLayers();
+      sourceLayer.clearLayers();
+      loadedHotels = [];
+      loadedSources = [];
+
+      statusStream.textContent = "Finding that city...";
+
+      try {
+        const geo = await locateCityCoordinates(city);
+        if (!geo) {
+          statusStream.textContent = "I could not find that place. Try city and country.";
+          setUiLoadingState(false);
+          return;
+        }
+
+        const radius = Number(radiusSelect.value);
+        map.setView([geo.lat, geo.lon], radius > 6000 ? 12 : 13);
+        statusStream.textContent = "Looking for hotels and noisy places...";
+
+        const responseData = await executeOverpassQuery(geo.lat, geo.lon, radius);
+        const parsedHotels = [];
+        const parsedSources = [];
+        const uniqueHotels = new Set();
+        const uniqueSources = new Set();
+
+        for (const el of responseData.elements || []) {
+          const hotel = parseOsmHotel(el);
+          if (hotel) {
+            if (!uniqueHotels.has(hotel.id)) {
+              uniqueHotels.add(hotel.id);
+              parsedHotels.push(hotel);
+            }
+            continue;
+          }
+
+          const source = parseOsmSource(el);
+          if (source && !uniqueSources.has(source.id)) {
+            uniqueSources.add(source.id);
+            parsedSources.push(source);
+          }
+        }
+
+        loadedHotels = parsedHotels;
+        loadedSources = parsedSources;
+
+       
+        const scored = renderMapHotelMarkers(parsedHotels, parsedSources);
+
+        // Autofit boundaries beautifully
+        if (scored && scored.length) {
+          const markerBounds = L.latLngBounds(scored.map(h => [h.position.lat, h.position.lon]));
+          map.fitBounds(markerBounds.pad(0.15), { maxZoom: 15 });
+        }
+
+        const topStay = scored ? scored[0] : null;
+        const suggestionStr = topStay ? ` Quietest found: ${topStay.name}.` : "";
+        statusStream.textContent = `Found ${parsedHotels.length} Hotels.`;
+
+        // Reset sidebar welcome probe
+        welcomeProbeMsg.classList.remove("hidden");
+        probePanel.classList.add("hidden");
+        if (activeProbeMarker) {
+          map.removeLayer(activeProbeMarker);
+          activeProbeMarker = null;
+        }
+      } catch (err) {
+        console.error(err);
+        statusStream.textContent = "That search was too heavy. Try a smaller distance.";
+      } finally {
+        setUiLoadingState(false);
+      }
+    }
+
+    // Toggle Loading Indicators
+    function setUiLoadingState(isLoading) {
+      searchBtn.disabled = isLoading;
+      cityInput.disabled = isLoading;
+      radiusSelect.disabled = isLoading;
+      searchBtn.classList.toggle("opacity-50", isLoading);
+      if (isLoading) {
+        searchBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Searching`;
+      } else {
+        searchBtn.innerHTML = `<i class="fa-solid fa-magnifying-glass"></i> Search`;
+      }
+    }
+
+    function escapeHtml(val) {
+      return String(val ?? "").replace(/[&<>"']/g, (c) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "\"": "&quot;",
+        "'": "&#39;"
+      }[c]));
+    }
+
+    // DAY & NIGHT TOGGLE MECHANICS
+    dayModeBtn.addEventListener("click", () => {
+      if (activeDayMode) return;
+      activeDayMode = true;
+      toggleDayNightUi();
+      refreshAcoustics();
+    });
+
+    nightModeBtn.addEventListener("click", () => {
+      if (!activeDayMode) return;
+      activeDayMode = false;
+      toggleDayNightUi();
+      refreshAcoustics();
+    });
+
+    function toggleDayNightUi() {
+      dayModeBtn.classList.toggle("bg-slate-800", activeDayMode);
+      dayModeBtn.classList.toggle("text-amber-400", activeDayMode);
+      dayModeBtn.classList.toggle("text-slate-400", !activeDayMode);
+
+      nightModeBtn.classList.toggle("bg-slate-800", !activeDayMode);
+      nightModeBtn.classList.toggle("text-indigo-300", !activeDayMode);
+      nightModeBtn.classList.toggle("text-slate-400", activeDayMode);
+
+      statusStream.textContent = `Switched to ${activeDayMode ? "day" : "night"} noise estimates.`;
+    }
+
+    function refreshAcoustics() {
+      renderSourceCatalog();
+      if (loadedSources.length > 0) {
+        renderMapHotelMarkers(loadedHotels, loadedSources);
+        if (activeProbeMarker) {
+          analyzeProbePosition(activeProbeMarker.getLatLng());
+        }
+        // If grid layer is populated, update grid automatically
+        if (gridLayer.getLayers().length > 0) {
+          calculateViewportNoiseHeatmap();
+        }
+      }
+    }
+
+    // EVENT BINDINGS
+    searchBtn.addEventListener("click", processAnalysisPipeline);
+    cityInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") processAnalysisPipeline();
+    });
+
+    resetMapBtn.addEventListener("click", () => {
+      cityInput.value = "";
+      gridLayer.clearLayers();
+      hotelLayer.clearLayers();
+      sourceLayer.clearLayers();
+      loadedHotels = [];
+      loadedSources = [];
+      if (activeProbeMarker) {
+        map.removeLayer(activeProbeMarker);
+        activeProbeMarker = null;
+      }
+      map.setView([1.3521, 103.8198], 13);
+      welcomeProbeMsg.classList.remove("hidden");
+      probePanel.classList.add("hidden");
+      statusStream.textContent = "Search a city to begin.";
+    });
+  </script>
+</body>
+</html>

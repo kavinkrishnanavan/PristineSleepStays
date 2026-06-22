@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PristineSleepStays</title>
+  
+  <!-- Leaflet Map CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons for visual styling -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #18201a;
+      --muted: #657165;
+      --green: #01639f;
+      --green-dark: #0215a3;
+      --blue: #1cb0f6;
+      --panel: #ffffff;
+      --line: #d8e4d5;
+    }
+    body {
+      font-family: 'Nunito', ui-sans-serif, system-ui, -apple-system, sans-serif;
+      background: #f7fbf2 !important;
+      color: var(--ink) !important;
+    }
+    /* Smooth custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f0f7eb;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #c8d8c1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #adc6a2;
+    }
+    /* Pulsing animation for active probe */
+    @keyframes sonar-pulse {
+      0% { transform: scale(0.9); opacity: 1; }
+      100% { transform: scale(2.2); opacity: 0; }
+    }
+    .probe-sonar {
+      position: relative;
+    }
+    .probe-sonar::after {
+      content: '';
+      position: absolute;
+      top: -12px;
+      left: -12px;
+      width: 36px;
+      height: 36px;
+      border: 3px solid #f43f5e;
+      border-radius: 50%;
+      animation: sonar-pulse 1.8s infinite ease-out;
+      pointer-events: none;
+    }
+    body,
+    aside,
+    header,
+    main,
+    section,
+    div {
+      border-color: var(--line) !important;
+    }
+    .bg-slate-950,
+    .bg-slate-800,
+    .bg-slate-900,
+    .bg-slate-900\/30,
+    .bg-slate-900\/40,
+    .bg-slate-900\/50,
+    .bg-slate-950\/40,
+    .bg-slate-950\/60 {
+      background-color: var(--panel) !important;
+    }
+    .bg-slate-800 {
+      background-color: #eef8ea !important;
+    }
+    .text-white,
+    .text-slate-100,
+    .text-slate-200,
+    .text-slate-300 {
+      color: var(--ink) !important;
+    }
+    .text-slate-400,
+    .text-slate-500,
+    .text-slate-600 {
+      color: var(--muted) !important;
+    }
+    .shadow-2xl {
+      box-shadow: 0 10px 26px rgba(31, 84, 28, 0.12) !important;
+    }
+    input,
+    select {
+      background: #fff !important;
+      color: var(--ink) !important;
+      border: 2px solid var(--line) !important;
+      border-radius: 12px !important;
+      font-size: 15px !important;
+      font-weight: 800 !important;
+      min-height: 44px;
+    }
+    input:focus,
+    select:focus {
+      border-color: var(--blue) !important;
+      box-shadow: 0 0 0 4px rgba(28, 176, 246, 0.16) !important;
+    }
+    #searchBtn,
+    a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--green) !important;
+  border: 0 !important;
+  border-bottom: 5px solid var(--green-dark) !important;
+  border-radius: 14px !important;
+  color: white !important;
+  font-size: 14px !important;
+  font-weight: 900 !important;
+  min-height: 44px;
+  padding: 0 18px !important;
+  text-transform: uppercase;
+  text-decoration: none; /* removes underline */
+}
+    #searchBtn:hover,
+    a:hover {
+      background: #0186d8 !important;
+    }
+    #searchBtn:active,
+    a:active {
+      transform: translateY(4px);
+      border-bottom-width: 1px !important;
+    }
+    #resetMapBtn {
+      color: var(--blue) !important;
+      background: #eaf7ff !important;
+      border-radius: 999px;
+      height: 34px;
+      width: 34px;
+    }
+    #map {
+      background: #eef7e7 !important;
+    }
+    #probeCoords {
+      display: none;
+    }
+    .leaflet-popup-content-wrapper,
+    .leaflet-popup-tip {
+      background: #ffffff !important;
+      color: var(--ink) !important;
+      border-radius: 14px !important;
+    }
+    .leaflet-control-zoom a {
+      color: var(--ink) !important;
+    }
+    .simple-card {
+      background: #ffffff;
+      border: 2px solid var(--line);
+      border-radius: 16px;
+    }
+    
+    
+  </style>
+  <link rel="icon" href="logo.png">
+</head>
+
+<body style="
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    font-family: 'Nunito', sans-serif;
+    
+">
+
+<header style="
+    position: absolute;
+    z-index: 9999;
+
+    right: 0;
+    
+    background-color: white;
+    border-radius: 0 0 0 15px;
+    padding: 10px;
+    display: flex;
+    gap: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    vertical-align: middle;
+">
+    <a href="index.html">Home</a>
+
+    <a href="media.html" class="aa">Media</a>
+    <a href="credits.html" class="aa">Credits</a>
+</header>
+<div style="margin-top: 30px;">
+    <div class="flex items-center gap-2 justify-center">
+        <img src="logo.png" style="width: 50px;">
+        <h1 class="text-2xl font-black tracking-tight">PristineSleepStays</h1>
+    </div>
+
+    <p class="text-sm text-slate-400 mt-1 font-bold">
+        Find calmer hotel areas before you book.
+    </p>
+
+    <br>
+
+    <h1 style="font-size: larger;">Guide</h1>
+
+    <br>
+
+    <div style="display: flex;  gap: 10px;">
+
+    <iframe loading="lazy" style=" width: 600px; height: 400px; border: none; border-radius: 14px;" scrolling="no"
+            src="https://www.canva.com/design/DAHMaqoioh4/-67_tNoaXN3h15EYtDyw8g/watch?embed" allowfullscreen="allowfullscreen" allow="fullscreen">
+    </iframe>
+
+    <img src="image.png" style="width: 250px; height: 400px; border-radius: 14px;">
+
+    </div>
+    <br>
+
+    <h1 style="font-size: larger;">Advertisement</h1>
+
+<br>
+    <div style="display: flex;  gap: 10px;">
+        <img src="poster.jpeg" style="width: 300px; height: 400px; border-radius: 14px;">
+     
+          
+          <iframe loading="lazy" style=" width: 600px; height: 400px; border: none; border-radius: 14px;" scrolling="no"
+            src="https://www.canva.com/design/DAHMa8hok_s/C-IJxtG3EEDYsFoDlgj4eg/watch?embed" allowfullscreen="allowfullscreen" allow="fullscreen">
+          </iframe>
+        
+          
+    </div>
+
+    <br>
+
+    
+ 
+</div>
+
+</body>
+</html>
