@@ -2,17 +2,19 @@ export async function handler(event) {
   try {
     const { message } = JSON.parse(event.body);
 
-    const response = await fetch("https://ai.netlify.com/v1/chat/completions", {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.AI_GROQ}`
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: "openai/gpt-oss-120b",
         messages: [
           { role: "system", content: "You are a helpful assistant." },
           { role: "user", content: message }
-        ]
+        ],
+        temperature: 0.7
       })
     });
 
@@ -28,7 +30,7 @@ export async function handler(event) {
   } catch (err) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ reply: "Error occurred" })
+      body: JSON.stringify({ reply: "Server error" })
     };
   }
 }
