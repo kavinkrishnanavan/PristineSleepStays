@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Netlify Node.js App</title>
+</head>
+<body>
+    <h1>My Netlify Project</h1>
+    <!DOCTYPE html>
+<html>
+<head>
+  <title>Test Netlify Function</title>
+</head>
+<body>
+  <h1>Netlify Function Test</h1>
+
+  <button onclick="callHello()">Call Hello</button>
+
+  <pre id="output"></pre>
+
+  <script>
+    async function callHello() {
+      try {
+        const res = await fetch('/.netlify/functions/hello');
+        const data = await res.json();
+
+        document.getElementById('output').textContent =
+          JSON.stringify(data, null, 2);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  </script>
+
+</body>
+</html>
