@@ -49,7 +49,7 @@ exports.handler = async (event) => {
                 - 0–19 = extremely noisy.
                 - silence_rating.reason must briefly explain the score.
                 - Base conclusions on available evidence, reviews, and location characteristics.
-                - If evidence is insufficient, provide the best estimate and explain the uncertainty in the reason field.
+                - If the Hotel Name is Wrong, then search for nearby hotels with similiar names to ones near the Lat And Lon. Never fail the user.
                 `.replace("{hotel_name}", userPrompt).replace("{lat}", lat).replace("{lon}", lng),
       config: {
         tools: [{ googleMaps: {} }],
