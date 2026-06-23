@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
 <body>
-  <h1>Coffee Finder</h1>
+  <h1>Hotel Rater</h1>
   
-  <input type="text" id="userPrompt" placeholder="e.g., quiet cafe with Wi-Fi">
-  <button id="findBtn">Find Coffee</button>
+  <input type="text" id="userPrompt" placeholder="Hotel...">
+  <button id="findBtn">AI Enhanced Search and Review</button>
   
   <div id="result" style="margin-top: 20px;"></div>
 
@@ -23,7 +23,7 @@
           body: JSON.stringify({ 
             lat: latitude, 
             lng: longitude, 
-            userPrompt: userPrompt 
+            userPrompt: userPrompt
           })
         });
 
