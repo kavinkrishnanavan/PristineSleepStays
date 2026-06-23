@@ -720,15 +720,7 @@
             </div>
           </div>
           <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${item.color}"></span>
-          <button
-            class="ai-enhanced-btn"
-            data-hotel="${escapeHtml(hotel.name)}"
-            data-city="${cityInput.value}"
-          >
-            ✨ AI Enhanced Search
-          </button>
-
-          <div class="ai-result mt-2 hidden"></div>
+          
         `;
         card.addEventListener("click", () => {
           selectedCatalogKey = key;
@@ -1253,6 +1245,15 @@
             <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider pt-1.5 border-t border-slate-800/80">Nearby noise</div>
             ${contributorsList}
           </div>
+          <button
+            class="ai-enhanced-btn"
+            data-hotel="${escapeHtml(hotel.name)}"
+            data-city="${cityInput.value}"
+          >
+            ✨ AI Enhanced Search
+          </button>
+
+          <div class="ai-result mt-2 hidden"></div>
         `;
 
         // Render high aesthetic custom circular Leaflet marker
