@@ -1,36 +1,27 @@
-export async function handler(event) {
+const { GoogleGenAI } = require("@google/genai");
+
+exports.handler = async (event) => {
+  const { lat, lng, userPrompt } = JSON.parse(event.body);
+  const client = new GoogleGenAI({ apiKey: process.env.AI_API });
+
   try {
-    const { message } = JSON.parse(event.body);
-
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.AI_GROQ}`
-      },
-      body: JSON.stringify({
-        model: "openai/gpt-oss-120b",
-        messages: [
-          { role: "system", content: "You are a helpful assistant." },
-          { role: "user", content: message }
-        ],
-        temperature: 0.7
-      })
+    const response = await client.models.generateContent({
+      model: "gemini-2.5-flash-lite",
+      // Use the prompt from the user, defaulting to a general query
+      contents: userPrompt || "What is the rating of the hotel nearby?",
+      config: {
+        tools: [{ googleMaps: {} }],
+        toolConfig: {
+          retrievalConfig: { latLng: { latitude: lat, longitude: lng } }
+        }
+      }
     });
-
-    const data = await response.json();
 
     return {
       statusCode: 200,
-      body: JSON.stringify({
-        reply: data.choices?.[0]?.message?.content || "No response"
-      })
+      body: JSON.stringify({ result: response.text }),
     };
-
-  } catch (err) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ reply: "Server error" })
-    };
+  } catch (error) {
+    return { statusCode: 500, body: JSON.stringify({ error: error.message }) };
   }
-}
+};

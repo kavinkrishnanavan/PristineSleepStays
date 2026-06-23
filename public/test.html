@@ -1,56 +1,38 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Netlify AI Chat</title>
-  <style>
-    body {
-      font-family: Arial;
-      max-width: 600px;
-      margin: auto;
-    }
-
-    #chat {
-      border: 1px solid #ccc;
-      height: 400px;
-      overflow-y: auto;
-      padding: 10px;
-    }
-
-    .user { color: blue; margin: 5px 0; }
-    .ai { color: green; margin: 5px 0; }
-  </style>
-</head>
 <body>
+  <h1>Coffee Finder</h1>
+  
+  <input type="text" id="userPrompt" placeholder="e.g., quiet cafe with Wi-Fi">
+  <button id="findBtn">Find Coffee</button>
+  
+  <div id="result" style="margin-top: 20px;"></div>
 
-<h2>AI Chat</h2>
+  <script>
+    document.getElementById('findBtn').addEventListener('click', async () => {
+      const userPrompt = document.getElementById('userPrompt').value;
+      const resultDiv = document.getElementById('result');
+      
+      resultDiv.innerText = "Searching...";
 
-<div id="chat"></div>
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        const { latitude, longitude } = position.coords;
 
-<input id="input" style="width:80%" placeholder="Type..." />
-<button onclick="send()">Send</button>
+        const response = await fetch('/.netlify/functions/get-coffee', {
+          method: 'POST',
+          body: JSON.stringify({ 
+            lat: latitude, 
+            lng: longitude, 
+            userPrompt: userPrompt 
+          })
+        });
 
-<script>
-async function send() {
-  const input = document.getElementById("input");
-  const chat = document.getElementById("chat");
-
-  const msg = input.value;
-  if (!msg) return;
-
-  chat.innerHTML += `<div class="user">You: ${msg}</div>`;
-  input.value = "";
-
-  const res = await fetch("/.netlify/functions/chat", {
-    method: "POST",
-    body: JSON.stringify({ message: msg })
-  });
-
-  const data = await res.json();
-
-  chat.innerHTML += `<div class="ai">AI: ${data.reply}</div>`;
-  chat.scrollTop = chat.scrollHeight;
-}
-</script>
-
+        const data = await response.json();
+        resultDiv.innerText = data.result || "Error: " + data.error;
+      }, (err) => {
+        resultDiv.innerText = "Error: Please enable location access.";
+      });
+    });
+  </script>
 </body>
 </html>

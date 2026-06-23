@@ -3,5 +3,8 @@
   "version": "1.0.0",
   "scripts": {
     "build": "echo Build complete"
+  },
+  "dependencies": {
+    "@google/genai": "^2.9.0"
   }
 }
