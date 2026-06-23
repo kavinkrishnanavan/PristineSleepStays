@@ -6,7 +6,7 @@ exports.handler = async (event) => {
 
   try {
     const response = await client.models.generateContent({
-      model: "gemini-2.5-flash-lite",
+      model: "gemini-3.1-flash-lite",
       // Use the prompt from the user, defaulting to a general query
       contents: `You are a hotel information assistant.
 
