@@ -53,8 +53,7 @@ exports.handler = async (event) => {
     config: {
         // Correct tools configuration
         tools: [
-          { googleMaps: {} },
-          { googleSearch: {} } 
+          { googleMaps: {} }
         ],
         toolConfig: {
           retrievalConfig: { latLng: { latitude: lat, longitude: lng } }
