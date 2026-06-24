@@ -1001,92 +1001,87 @@
 
     try {
 
-      navigator.geolocation.getCurrentPosition(async (position) => {
+      const response = await fetch('/.netlify/functions/ai', {
+        method: 'POST',
+        headers: {
+          'Content-Type':'application/json'
+        },
+        body: JSON.stringify({
+          lat: lat,
+          lng: lng,
+          userPrompt: hotelName + " in " + city,
+          city: city 
+        })
+      });
 
-        const response = await fetch('/.netlify/functions/ai', {
-          method: 'POST',
-          headers: {
-            'Content-Type':'application/json'
-          },
-          body: JSON.stringify({
-            lat: lat,
-            lng: lng,
-            userPrompt: hotelName + " in " + city,
-            city: city 
-          })
-        });
+      const data = await response.json();
 
-        const data = await response.json();
+      const hotel =
+        typeof data.result === "string"
+          ? JSON.parse(data.result)
+          : data.result;
 
-        const hotel =
-          typeof data.result === "string"
-            ? JSON.parse(data.result)
-            : data.result;
+      resultBox.innerHTML = `
+        <div style="
+          margin-top:10px;
+          border-top:1px solid #ddd;
+          padding-top:10px;
+          font-family:sans-serif;
+        ">
 
-        resultBox.innerHTML = `
+          <div style="
+            font-size:16px;
+            font-weight:800;
+            color:#8b5cf6;
+          ">
+            ${hotel.name || "Unknown Hotel"}
+          </div>
+
+          <div style="margin-top:6px">
+            ⭐ Rating:
+            <strong>${hotel.rating ?? "N/A"}</strong>
+          </div>
+
+          <div style="margin-top:6px">
+            🤫 Silence Score:
+            <strong>
+              ${hotel.silence_rating?.score ?? "N/A"}/100
+            </strong>
+          </div>
+
+          <div style="
+            margin-top:6px;
+            font-size:12px;
+            color:#666;
+          ">
+            ${hotel.silence_rating?.reason || ""}
+          </div>
+
           <div style="
             margin-top:10px;
-            border-top:1px solid #ddd;
-            padding-top:10px;
-            font-family:sans-serif;
+            font-size:13px;
+            line-height:1.5;
           ">
-
-            <div style="
-              font-size:16px;
-              font-weight:800;
-              color:#8b5cf6;
-            ">
-              ${hotel.name || "Unknown Hotel"}
-            </div>
-
-            <div style="margin-top:6px">
-              ⭐ Rating:
-              <strong>${hotel.rating ?? "N/A"}</strong>
-            </div>
-
-            <div style="margin-top:6px">
-              🤫 Silence Score:
-              <strong>
-                ${hotel.silence_rating?.score ?? "N/A"}/100
-              </strong>
-            </div>
-
-            <div style="
-              margin-top:6px;
-              font-size:12px;
-              color:#666;
-            ">
-              ${hotel.silence_rating?.reason || ""}
-            </div>
-
-            <div style="
-              margin-top:10px;
-              font-size:13px;
-              line-height:1.5;
-            ">
-              ${hotel.summary || ""}
-            </div>
-
-            ${
-              hotel.amenities?.length
-              ? `
-                <div style="margin-top:10px">
-                  <strong>Amenities</strong>
-                  <ul style="margin-top:4px;padding-left:18px">
-                    ${hotel.amenities.map(a => `<li>-${a}</li>`).join('')}
-                  </ul>
-                </div>
-              `
-              : ''
-            }
-
+            ${hotel.summary || ""}
           </div>
-        `;
 
-      }, () => {
-        resultBox.innerHTML =
-          '<div style="color:red">Location permission required.</div>';
-      });
+          ${
+            hotel.amenities?.length
+            ? `
+              <div style="margin-top:10px">
+                <strong>Amenities</strong>
+                <ul style="margin-top:4px;padding-left:18px">
+                  ${hotel.amenities.map(a => `<li>-${a}</li>`).join('')}
+                </ul>
+              </div>
+            `
+            : ''
+          }
+
+        </div>
+      `;
+
+      
 
     } catch(err) {
 
