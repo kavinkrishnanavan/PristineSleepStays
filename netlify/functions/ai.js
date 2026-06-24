@@ -7,61 +7,45 @@ exports.handler = async (event) => {
   try {
     const response = await client.models.generateContent({
       model: "gemini-3.1-flash-lite",
-      // Use the prompt from the user, defaulting to a general query
+      // Use template literals directly to avoid .replace() errors
       contents: `You are a hotel information assistant.
-
-                Find details about the hotel named "{hotel_name}" located in the Lat/Lon Given "{lat} , "{lon}".
-
-                Return ONLY valid JSON matching this schema:
-
-                {
-                  "name": "string | null",
-                  "rating": number | null,
-                  "summary": "string | null",
-                  "address": "string | null",
-                  "city": "string | null",
-                  "country": "string | null",
-                  "amenities": ["string"],
-                  "highlights": ["string"],
-                  "review_overview": {
-                    "positive": ["string"],
-                    "negative": ["string"]
-                  },
-                  "silence_rating": {
-                    "score": number,
-                    "reason": "string"
-                  }
-                }
-
-                Rules:
-                - No markdown.
-                - No comments.
-                - No extra text before or after the JSON.
-                - Use null when information is unavailable.
-                - Summary must be factual and concise.
-                - silence_rating.score must be an integer from 0 to 100.
-                - silence_rating.score is an AI-estimated quietness score based on hotel location, nearby roads, nightlife, airports, railways, guest reviews, room soundproofing, and surrounding environment.
-                - 100 = exceptionally quiet and ideal for sleep.
-                - 80–99 = very quiet.
-                - 60–79 = generally quiet with occasional noise.
-                - 40–59 = moderate noise.
-                - 20–39 = frequently noisy.
-                - 0–19 = extremely noisy.
-                - silence_rating.reason must briefly explain the score.
-                - If the Hotel Name is Wrong, then search for nearby hotels with similiar names to ones near the Lat And Lon. Never fail the user.
-                `.replace("{hotel_name}", userPrompt).replace("{lat}", lat).replace("{lon}", lng),
+        Find details about the hotel named "${userPrompt}" located at Lat: ${lat}, Lon: ${lng}.
+        Return ONLY valid JSON matching this schema:
+        {
+          "name": "string | null",
+          "rating": "number | null",
+          "summary": "string | null",
+          "address": "string | null",
+          "city": "string | null",
+          "country": "string | null",
+          "amenities": ["string"],
+          "highlights": ["string"],
+          "review_overview": { "positive": ["string"], "negative": ["string"] },
+          "silence_rating": { "score": "number", "reason": "string" }
+        }
+        Rules: No markdown, no comments, no extra text. Use null for missing data.`,
       config: {
         responseMimeType: "application/json",
         tools: [{ googleSearch: {} }]
       }
-      });
+    });
+
+    // 1. Get the text content
+    const responseText = response.text(); 
+    
+    // 2. Parse the string to a JSON object so it can be safely sent as a proper JSON response
+    const parsedData = JSON.parse(responseText);
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ result: response.text }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ result: parsedData }),
     };
   } catch (error) {
     console.error("Function failed:", error);
-    return { statusCode: 500, body: JSON.stringify({ error: error.message }) };
+    return { 
+      statusCode: 500, 
+      body: JSON.stringify({ error: "Failed to process request: " + error.message }) 
+    };
   }
 };
