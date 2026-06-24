@@ -4,6 +4,9 @@ exports.handler = async (event) => {
   const { lat, lng, userPrompt } = JSON.parse(event.body);
   const client = new GoogleGenAI({ apiKey: process.env.AI_API });
 
+  console.log(lat)
+  console.log(lng)
+
   try {
     const response = await client.models.generateContent({
       model: "gemini-3.1-flash-lite",
