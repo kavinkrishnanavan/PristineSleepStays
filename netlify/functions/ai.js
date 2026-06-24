@@ -1,7 +1,7 @@
 const { GoogleGenAI } = require("@google/genai");
 
 exports.handler = async (event) => {
-  const { lat, lng, userPrompt } = JSON.parse(event.body);
+  const { lat, lng, userPrompt , city } = JSON.parse(event.body);
   const client = new GoogleGenAI({ apiKey: process.env.AI_API });
 
   console.log(lat)
@@ -13,7 +13,7 @@ exports.handler = async (event) => {
       // Use the prompt from the user, defaulting to a general query
       contents: `You are a hotel information assistant.
 
-                Find details about the hotel named "{hotel_name}" located in the Lat/Lon Given "{lat} , "{lon}".
+                Find details about the hotel named "{hotel_name}" located in the Lat/Lon Given "{lat} , "{lon}". It is in the location of "{city}.
 
                 Return ONLY valid JSON matching this schema:
 

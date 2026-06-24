@@ -986,6 +986,8 @@
 
     const hotelName = btn.dataset.hotel;
     const city = btn.dataset.city;
+    const lat = btn.dataset.lat; // Retrieve hotel latitude
+    const lng = btn.dataset.lng; // Retrieve hotel longitude
 
     const resultBox =
       e.popup._contentNode.querySelector('.ai-result');
@@ -1007,9 +1009,10 @@
             'Content-Type':'application/json'
           },
           body: JSON.stringify({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-            userPrompt: hotelName + " in " + city
+            lat: lat,
+            lng: lng,
+            userPrompt: hotelName + " in " + city,
+            city: city 
           })
         });
 
@@ -1249,6 +1252,8 @@
             class="ai-enhanced-btn"
             data-hotel="${escapeHtml(hotel.name)}"
             data-city="${cityInput.value}"
+            data-lat="${hotel.position.lat}" 
+            data-lng="${hotel.position.lon}"
           >
             ✨ AI Enhanced Search
           </button>
@@ -1435,7 +1440,7 @@
         }
       } catch (err) {
         console.error(err);
-        statusStream.textContent = "That search was too heavy. Try a smaller distance.";
+        statusStream.textContent = "Please try again...";
       } finally {
         setUiLoadingState(false);
       }
