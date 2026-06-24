@@ -48,17 +48,24 @@ exports.handler = async (event) => {
                 - 20–39 = frequently noisy.
                 - 0–19 = extremely noisy.
                 - silence_rating.reason must briefly explain the score.
-                - If the Hotel Name is Wrong, then search for nearby hotels with similiar names to ones near the Lat And Lon. Never fail the user. And also, you may use Google Search.
+                - If the Hotel Name is Wrong, then search for nearby hotels with similiar names to ones near the Lat And Lon. Never fail the user.
                 `.replace("{hotel_name}", userPrompt).replace("{lat}", lat).replace("{lon}", lng),
     config: {
-        // Correct tools configuration
+
         tools: [
-          { googleMaps: {} }
+          {
+            googleSearchRetrieval: {
+              dynamicRetrievalConfig: {
+                mode: "dynamic",
+                dynamicThreshold: 0.3
+              }
+            }
+          }
         ],
+        // No specific lat/lng config is required for standard Google Search
         toolConfig: {
-          retrievalConfig: { latLng: { latitude: lat, longitude: lng } }
+          googleSearchRetrieval: {}
         }
-      }
     });
 
     return {
