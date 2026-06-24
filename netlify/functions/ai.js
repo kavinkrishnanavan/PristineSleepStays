@@ -50,13 +50,11 @@ exports.handler = async (event) => {
                 - silence_rating.reason must briefly explain the score.
                 - If the Hotel Name is Wrong, then search for nearby hotels with similiar names to ones near the Lat And Lon. Never fail the user.
                 `.replace("{hotel_name}", userPrompt).replace("{lat}", lat).replace("{lon}", lng),
-config: {
-    // Enforce JSON output at the model level
-    responseMimeType: "application/json",
-    tools: [{ googleSearchRetrieval: { dynamicRetrievalConfig: { mode: "dynamic", dynamicThreshold: 0.3 } } }],
-    toolConfig: { googleSearchRetrieval: {} }
-  }
-});
+      config: {
+        responseMimeType: "application/json",
+        tools: [{ googleSearch: {} }]
+      }
+      });
 
     return {
       statusCode: 200,
