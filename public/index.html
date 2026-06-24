@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Quiet-Stay</title>
+  <title>PristineSleepStays</title>
   
   <!-- Leaflet Map CSS & JS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -15,19 +15,20 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
-  <meta name="google-site-verification" content="8oATgks7lPrSD6fC2lMBhpTGR-nbPg6TUHvAtdvUMyg" />
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "name": "QuietStay",
-    "url": "https://quietstay.netlify.app/"
+    "name": "PristineSleepStays",
+    "url": "https://pristinesleepstays.netlify.app/"
   }
 </script>
-<meta name="application-name" content="QuietStay">
-<meta name="apple-mobile-web-app-title" content="QuietStay">
+<meta name="application-name" content="PristineSleepStays">
+<meta name="apple-mobile-web-app-title" content="PristineSleepStays">
 
 <link rel="apple-touch-icon" href="logo.png">
+<link rel="icon" href="logo.png">
+
   <style>
     :root {
       color-scheme: light;
@@ -235,7 +236,7 @@
   transform:translateY(1px);
 }
   </style>
-  <link rel="icon" href="logo.png">
+  
 </head>
 
 <body class="bg-slate-950 text-slate-100 h-screen overflow-hidden flex flex-col md:flex-row">
@@ -265,7 +266,7 @@
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
           <img src="logo.png" style="width: 50px;">
-          <h1 class="text-2xl font-black tracking-tight text-white">Quiet-Stay</h1>
+          <h1 class="text-2xl font-black tracking-tight text-white">PristineSleepStays</h1>
         </div>
       </div>
       <p class="text-sm text-slate-400 mt-1 font-bold">Find calmer hotel areas before you book.</p>
@@ -1043,7 +1044,7 @@
           </div>
 
           <div style="margin-top:6px">
-            🤫 Silence Score:
+            🤫 AI Silence Score:
             <strong>
               ${hotel.silence_rating?.score ?? "N/A"}/100
             </strong>
@@ -1071,7 +1072,7 @@
               <div style="margin-top:10px">
                 <strong>Amenities</strong>
                 <ul style="margin-top:4px;padding-left:18px">
-                  ${hotel.amenities.map(a => `<li>-${a}</li>`).join('')}
+                  ${hotel.amenities.map(a => `<li>- ${a}</li>`).join('')}
                 </ul>
               </div>
             `
